@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+}
+
+pre, code {
+  margin: 0;
+}
+
+#canvas {
+  font-family: monospace;
+  white-space: pre;
+}
