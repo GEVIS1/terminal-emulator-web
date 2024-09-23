@@ -2,7 +2,6 @@ import './style.css'
 const canvas = document.querySelector<HTMLPreElement>('#canvas');
 
 // TODO: animate ripple from centre?
-let canvasText = "";
 
 const textSize = document.createElement<"pre">("pre");
 let textSizeRect;
@@ -18,30 +17,118 @@ textSize.style.padding = "0px";
 textSize.textContent = "╔";
 textSizeRect = textSize.getBoundingClientRect();
 
-// const testElement = document.createElement("div") as HTMLDivElement;
-// if (!testElement) {
-//   throw new Error("Unable to query testElement")
-// }
-// testElement.style.background = "green";
-// testElement.style.position = "absolute";
-// const index = Math.floor(window.innerWidth / textSizeRect.width);
-// testElement.style.left = `${(textSizeRect.width * index).toString()}px`;
-// testElement.style.width = `${textSizeRect.width.toString()}px`;
-// testElement.style.height = `${textSizeRect.height.toString()}px`;
+let columns = Math.floor(window.innerWidth / textSizeRect.width);
+let rows = Math.floor(window.innerHeight / textSizeRect.height);
 
-// document.querySelector("body")?.appendChild(testElement);
+let user = "user"
+let host = document.location.hostname
+let pwd = `~/`
+const generatePs1 = () => `${user}@${host} ${pwd} $ `
+let ps1 = generatePs1();
+
+let cursorTime = 1000;
+let lastCursorTime = 0;
+let drawCursor = true;
 
 if (!canvas) {
   throw new Error("Unable to query canvas/pre element")
 }
-canvas.textContent = "ddderp"
 
-window.addEventListener('resize', async (_event: Event) => {
-  const columns = Math.floor(window.innerWidth / textSizeRect.width);
-  const rows = Math.floor(window.innerHeight / textSizeRect.height);
-  console.log("columns: ",columns)
-  console.log("rows: ",rows)
-  
+// Credit https://stackoverflow.com/a/45486495
+const ALL_COMMANDS = ["clear", "help", "whoami", "hostname"] as const;
+type CommandTuple = typeof ALL_COMMANDS;
+type Command = CommandTuple[number];
+
+function isCommand(command: string | undefined): command is Command {
+  for (const validCommand of ALL_COMMANDS) {
+    if (command === validCommand)  {
+      return true;
+    }
+  }
+  return false;
+}
+
+async function execute(commandStr: string) {
+  let commandArray = commandStr.split(" ");
+  let command = commandArray.shift()
+
+  if (!isCommand(command)) {
+    if (command === "") {
+      return;
+    }
+    windowBuffer.push(`Error: No such command \`${command}\'`)
+    return;
+  }
+
+  switch (command) {
+    case "clear":
+      // TODO: consider scrolling/inserting empty rows instead?
+      windowBuffer = [];
+    break;
+    case "help":
+      windowBuffer.push(`Available commands: ${ALL_COMMANDS.join(" ")}`)
+    break;
+    case "hostname":
+      // TODO: Handle spaces/erronous input
+      let newHostname = commandArray.shift();
+      
+      if (newHostname === undefined) {
+        windowBuffer.push(host);
+        return;
+      }
+
+      host = newHostname;
+      ps1 = generatePs1();
+    break;
+    case "whoami":
+      windowBuffer.push(user);
+    break;
+      
+  }
+  console.log(`UNIMPLEMENTED: Executed ${command}`)
+}
+
+let windowBuffer: Array<string> = [];
+// for (let i = 0; i < 20; ++i) {
+//   windowBuffer.push(`Line ${i}`);
+// }
+
+//Array(rows-2).fill("");
+let inputBuffer: Array<string> = [];
+
+window.addEventListener("resize", async (_event: Event) => {
+  columns = Math.floor(window.innerWidth / textSizeRect.width);
+  rows = Math.floor(window.innerHeight / textSizeRect.height);
+});
+
+window.addEventListener('keydown', async (event: KeyboardEvent) => {
+  if (event.key == "Backspace" && inputBuffer.length > 0) {
+    inputBuffer.pop();
+  } else if (event.key == "Enter") {
+    let inputstr = inputBuffer.join("");
+    windowBuffer.push(ps1 + inputstr)
+    execute(inputstr)
+    inputBuffer = [];
+  }
+  else if (event.ctrlKey && event.key == "v") {
+    let pastedText = await navigator.clipboard.readText();
+    inputBuffer.push(pastedText)
+  }
+  else if (event.key.length == 1) // TODO: Robust testing required. Are emojis 1 length?? 
+  {
+    if (event.key == "'") {
+      event.preventDefault();
+    }
+    inputBuffer.push(event.key)
+  }
+});
+
+const draw = async (time: number) => {
+  if (time - lastCursorTime > cursorTime) {
+    lastCursorTime = time;
+    drawCursor = !drawCursor;
+  }
+
   let buffer = "";
 
   let windowTitle = "Hello World!";
@@ -55,9 +142,7 @@ window.addEventListener('resize', async (_event: Event) => {
   // TODO: fix off by one error on middleWidthHalf
   const middleWidthHalf = Math.floor((middleWidth / 2) - (windowTitle.length / 2) - 1);
 
-  console.log("middleWidthHalf: ", middleWidthHalf)
-
-  "{}"
+  let inputBufferStr = inputBuffer.join("");
 
   // First row
   buffer += "╔";
@@ -68,13 +153,35 @@ window.addEventListener('resize', async (_event: Event) => {
   buffer += "═".repeat(middleWidthHalf);
   buffer += "╗";
   buffer += "\n";
+
   // Middle
-  for (let row = 1; row < rows - 1; row++) {
+  for (let row = 0; row < rows - 3; row++) {
+    let bufferIndex = (-(rows - 2)) + windowBuffer.length + row + 1;
     buffer += "║";
-    buffer += " ".repeat(middleWidth);
+    if (windowBuffer[bufferIndex] === undefined) {
+      buffer += "";
+      buffer += " ".repeat(middleWidth);  
+    } else {
+      buffer += windowBuffer[bufferIndex];
+      buffer += " ".repeat(middleWidth - (windowBuffer[bufferIndex].length));
+    }
     buffer += "║";
     buffer += "\n";
   }
+
+  // Input line
+  buffer += "║";
+  buffer += ps1
+  buffer += inputBufferStr;
+  if (drawCursor) {
+    buffer += "█";
+    buffer += " ".repeat(middleWidth - inputBufferStr.length - ps1.length - 1);
+  } else {
+    buffer += " ".repeat(middleWidth - inputBufferStr.length - ps1.length);
+  }
+  buffer += "║";
+  buffer += "\n";
+
   // Last row
   buffer += "╚";
   buffer += "═".repeat(middleWidth);
@@ -82,9 +189,8 @@ window.addEventListener('resize', async (_event: Event) => {
   buffer += "\n";
   
   canvas.innerText = buffer;
-  
-  console.log() 
-  console.log(window.innerWidth)
-});
 
+  requestAnimationFrame(draw)
+}
 
+requestAnimationFrame(draw)
