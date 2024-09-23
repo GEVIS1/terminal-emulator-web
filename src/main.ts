@@ -21,6 +21,17 @@ let columns = Math.floor(window.innerWidth / textSizeRect.width);
 let rows = Math.floor(window.innerHeight / textSizeRect.height);
 let middleWidth = columns - 2;
 
+// Do this as a hack to make links clickable initially.
+// const testNode = document.createElement("a")
+// testNode.href = "https://www.google.com"
+// testNode.style.backgroundColor = "rgba(0,0,255,125)"
+// testNode.style.position = "absolute"
+// testNode.style.width = "200px"
+// testNode.style.height = `${textSizeRect.height}px`
+// testNode.style.top = `${(rows-2)*textSizeRect.height}px`
+// testNode.style.left = `${textSizeRect.width}px`
+// document.querySelector("body")?.appendChild(testNode)
+
 let user = "user"
 let host = document.location.hostname
 let pwd = `~/`
@@ -103,7 +114,6 @@ async function execute(commandStr: string) {
     break;
       
   }
-  console.log(`UNIMPLEMENTED: Executed ${command}`)
 }
 
 let windowBuffer: Array<string> = [];
