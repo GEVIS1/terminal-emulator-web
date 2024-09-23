@@ -19,6 +19,7 @@ textSizeRect = textSize.getBoundingClientRect();
 
 let columns = Math.floor(window.innerWidth / textSizeRect.width);
 let rows = Math.floor(window.innerHeight / textSizeRect.height);
+let middleWidth = columns - 2;
 
 let user = "user"
 let host = document.location.hostname
@@ -48,6 +49,22 @@ function isCommand(command: string | undefined): command is Command {
   return false;
 }
 
+// TODO: abstract this into windowbuffer class perhaps
+function windowBufferSafePush(windowBuffer: Array<string>, str: string) {
+  if (str.length > middleWidth) {
+    for (let i = 0; i < str.length; i += middleWidth) {
+      const start = i;
+      let end = i+middleWidth;
+      if (end > str.length - 1) {
+        end = str.length - 1;
+      }
+      windowBuffer.push(str.slice(start, end))
+    }
+  } else {
+    windowBuffer.push(str)
+  }
+}
+
 async function execute(commandStr: string) {
   let commandArray = commandStr.split(" ");
   let command = commandArray.shift()
@@ -56,7 +73,8 @@ async function execute(commandStr: string) {
     if (command === "") {
       return;
     }
-    windowBuffer.push(`Error: No such command \`${command}\'`)
+    windowBufferSafePush(windowBuffer, `Error: No such command \`${command}\'`)
+    
     return;
   }
 
@@ -99,6 +117,7 @@ let inputBuffer: Array<string> = [];
 window.addEventListener("resize", async (_event: Event) => {
   columns = Math.floor(window.innerWidth / textSizeRect.width);
   rows = Math.floor(window.innerHeight / textSizeRect.height);
+  middleWidth = columns - 2;
 });
 
 window.addEventListener('keydown', async (event: KeyboardEvent) => {
@@ -106,8 +125,11 @@ window.addEventListener('keydown', async (event: KeyboardEvent) => {
     inputBuffer.pop();
   } else if (event.key == "Enter") {
     let inputstr = inputBuffer.join("");
-    windowBuffer.push(ps1 + inputstr)
-    execute(inputstr)
+
+    // TODO: ~handle resizing~ write test for resizing
+    let bufferStr = ps1 + inputstr;
+    windowBufferSafePush(windowBuffer, bufferStr);
+    execute(inputstr);
     inputBuffer = [];
   }
   else if (event.ctrlKey && event.key == "v") {
@@ -132,9 +154,6 @@ const draw = async (time: number) => {
   let buffer = "";
 
   let windowTitle = "Hello World!";
-  
-
-  const middleWidth = columns - 2;
   if ((windowTitle.length % 2) !== 0) {
     windowTitle += " ";
   }
@@ -163,7 +182,11 @@ const draw = async (time: number) => {
       buffer += " ".repeat(middleWidth);  
     } else {
       buffer += windowBuffer[bufferIndex];
-      buffer += " ".repeat(middleWidth - (windowBuffer[bufferIndex].length));
+      // TODO: Properly handle negative numbers. Wrap text perhaps? Push it to the buffer.. etc.
+      let extraSpaces = middleWidth - (windowBuffer[bufferIndex].length);
+      if (extraSpaces > 0) {
+        buffer += " ".repeat(extraSpaces);
+      }
     }
     buffer += "║";
     buffer += "\n";
@@ -172,11 +195,19 @@ const draw = async (time: number) => {
   // Input line
   buffer += "║";
   buffer += ps1
-  buffer += inputBufferStr;
+  let maxInputChars = middleWidth - ps1.length;
+  
   if (drawCursor) {
-    buffer += "█";
-    buffer += " ".repeat(middleWidth - inputBufferStr.length - ps1.length - 1);
+    inputBufferStr += "█";
   } else {
+    inputBufferStr += " ";
+  } 
+
+  // TODO: ~fix overflow~ write test for overflow
+  if (inputBufferStr.length > maxInputChars) {
+    buffer += inputBufferStr.slice(inputBufferStr.length - maxInputChars, inputBufferStr.length)
+  } else {
+    buffer += inputBufferStr;
     buffer += " ".repeat(middleWidth - inputBufferStr.length - ps1.length);
   }
   buffer += "║";
