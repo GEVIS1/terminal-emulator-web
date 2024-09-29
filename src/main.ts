@@ -121,10 +121,6 @@ function createLineElement(buffer: string): HTMLParagraphElement {
   return line;
 }
 
-function updateElements() {
-  throw new Error('Function not implemented.');
-}
-
 let windowBuffer: Array<string> = [];
 let inputBuffer: Array<string> = [];
 
