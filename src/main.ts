@@ -115,9 +115,31 @@ async function execute(commandStr: string) {
   }
 }
 
-function createLineElement(buffer: string): HTMLParagraphElement {
+function createLineElement(buffer: string, generateAnchors: boolean = true): HTMLParagraphElement {
+
+  if (generateAnchors) {
+
+    // Regex credit: https://regexr.com/39nr7
+    const urlMatch = buffer.match(/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)
+
+    if (urlMatch) {
+      for (let url of urlMatch) {
+        if (url === "") {
+          continue;
+        }
+
+        const element = document.createElement<"a">("a");
+        element.href += "//" + url;
+        element.innerText = url;
+        element.target = "_blank"
+
+        buffer = buffer.replace(url, element.outerHTML)
+      }
+    }
+  }
+
   const line = document.createElement<"p">("p");
-  line.textContent = buffer;
+  line.innerHTML = buffer;
   return line;
 }
 
@@ -191,6 +213,7 @@ const draw = async (time: number) => {
   }
   
   // Input line
+  // TODO: make input line a text input so it works on mobile
   buffer = ps1
   let maxInputChars = columns - ps1.length;
   
@@ -208,7 +231,7 @@ const draw = async (time: number) => {
     buffer += "\u00A0".repeat(columns - inputBufferStr.length - ps1.length);
   }
 
-  canvas.appendChild(createLineElement(buffer));
+  canvas.appendChild(createLineElement(buffer, false));
 
   requestAnimationFrame(draw)
 }
