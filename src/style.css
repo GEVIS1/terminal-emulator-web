@@ -2,9 +2,16 @@ body {
   margin: 0;
 }
 
+
+/* IosevkaTerm-Regular license: https://github.com/be5invis/Iosevka/blob/main/LICENSE.md */
+@font-face{
+  font-family: Iosefka;
+  src: local('./IosevkaTerm-Regular.woff2'), url('./IosevkaTerm-Regular.woff2') format('woff2');
+}
+
 p {
   margin: 0;
-  overflow: hidden;
+  font-family: 'Iosefka', monospace; 
 }
 
 #canvas {
