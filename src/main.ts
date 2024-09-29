@@ -1,15 +1,19 @@
 import './style.css'
-const canvas = document.querySelector<HTMLPreElement>('#canvas');
+const canvas = document.querySelector<HTMLDivElement>('#terminal');
+
+if (!canvas) {
+  throw new Error("Unable to query canvas")
+}
 
 // TODO: animate ripple from centre?
 
-const textSize = document.createElement<"pre">("pre");
+const textSize = document.createElement<"p">("p");
 let textSizeRect;
 
 // TODO: consider deleting element
 document.querySelector("body")?.appendChild(textSize);
 if (!textSize) {
-  throw new Error("Unable to query textSize")
+  throw new Error("Unable to query textSize");
 }
 textSize.style.position = "absolute";
 textSize.style.top = "-100px";
@@ -19,7 +23,6 @@ textSizeRect = textSize.getBoundingClientRect();
 
 let columns = Math.floor(window.innerWidth / textSizeRect.width);
 let rows = Math.floor(window.innerHeight / textSizeRect.height);
-let middleWidth = columns - 2;
 
 // Do this as a hack to make links clickable initially.
 // const testNode = document.createElement("a")
@@ -42,10 +45,6 @@ let cursorTime = 1000;
 let lastCursorTime = 0;
 let drawCursor = true;
 
-if (!canvas) {
-  throw new Error("Unable to query canvas/pre element")
-}
-
 // Credit https://stackoverflow.com/a/45486495
 const ALL_COMMANDS = ["clear", "help", "whoami", "hostname"] as const;
 type CommandTuple = typeof ALL_COMMANDS;
@@ -62,10 +61,10 @@ function isCommand(command: string | undefined): command is Command {
 
 // TODO: abstract this into windowbuffer class perhaps
 function windowBufferSafePush(windowBuffer: Array<string>, str: string) {
-  if (str.length > middleWidth) {
-    for (let i = 0; i < str.length; i += middleWidth) {
+  if (str.length > columns) {
+    for (let i = 0; i < str.length; i += columns) {
       const start = i;
-      let end = i+middleWidth;
+      let end = i + columns;
       if (end > str.length - 1) {
         end = str.length - 1;
       }
@@ -116,18 +115,22 @@ async function execute(commandStr: string) {
   }
 }
 
-let windowBuffer: Array<string> = [];
-// for (let i = 0; i < 20; ++i) {
-//   windowBuffer.push(`Line ${i}`);
-// }
+function createLineElement(buffer: string): HTMLParagraphElement {
+  const line = document.createElement<"p">("p");
+  line.textContent = buffer;
+  return line;
+}
 
-//Array(rows-2).fill("");
+function updateElements() {
+  throw new Error('Function not implemented.');
+}
+
+let windowBuffer: Array<string> = [];
 let inputBuffer: Array<string> = [];
 
 window.addEventListener("resize", async (_event: Event) => {
   columns = Math.floor(window.innerWidth / textSizeRect.width);
   rows = Math.floor(window.innerHeight / textSizeRect.height);
-  middleWidth = columns - 2;
 });
 
 window.addEventListener('keydown', async (event: KeyboardEvent) => {
@@ -153,59 +156,47 @@ window.addEventListener('keydown', async (event: KeyboardEvent) => {
     }
     inputBuffer.push(event.key)
   }
+
+  //updateElements()
 });
 
+// TODO: Only update elements when something changed
 const draw = async (time: number) => {
   if (time - lastCursorTime > cursorTime) {
     lastCursorTime = time;
     drawCursor = !drawCursor;
   }
 
+  canvas.innerHTML = "";
+
   let buffer = "";
-
-  let windowTitle = "Hello World!";
-  if ((windowTitle.length % 2) !== 0) {
-    windowTitle += " ";
-  }
-  
-  // TODO: fix off by one error on middleWidthHalf
-  const middleWidthHalf = Math.floor((middleWidth / 2) - (windowTitle.length / 2) - 1);
-
   let inputBufferStr = inputBuffer.join("");
-
-  // First row
-  buffer += "╔";
-  buffer += "═".repeat(middleWidthHalf);
-  buffer += "╡";
-  buffer += windowTitle;
-  buffer += "╞";
-  buffer += "═".repeat(middleWidthHalf);
-  buffer += "╗";
-  buffer += "\n";
-
-  // Middle
-  for (let row = 0; row < rows - 3; row++) {
-    let bufferIndex = (-(rows - 2)) + windowBuffer.length + row + 1;
-    buffer += "║";
+  
+  for (let row = 0; row < rows - 1; row++) {
+    let bufferIndex = (-(rows - 1)) + windowBuffer.length + row;// + 1;
+    buffer = "";
+    
     if (windowBuffer[bufferIndex] === undefined) {
       buffer += "";
-      buffer += " ".repeat(middleWidth);  
+      buffer += "\u00A0".repeat(columns);
+      console.log(`Wrote ${columns} spaces to buffer`)
     } else {
       buffer += windowBuffer[bufferIndex];
       // TODO: Properly handle negative numbers. Wrap text perhaps? Push it to the buffer.. etc.
-      let extraSpaces = middleWidth - (windowBuffer[bufferIndex].length);
+      let extraSpaces = columns - (windowBuffer[bufferIndex].length);
       if (extraSpaces > 0) {
-        buffer += " ".repeat(extraSpaces);
+        buffer += "\u00A0".repeat(extraSpaces);
+        console.log(`Wrote ${extraSpaces} spaces to buffer`)
       }
     }
-    buffer += "║";
-    buffer += "\n";
+    
+    canvas.appendChild(createLineElement(buffer));
+    //buffer += appendNewline(buffer)
   }
-
+  
   // Input line
-  buffer += "║";
-  buffer += ps1
-  let maxInputChars = middleWidth - ps1.length;
+  buffer = ps1
+  let maxInputChars = columns - ps1.length;
   
   if (drawCursor) {
     inputBufferStr += "█";
@@ -218,18 +209,10 @@ const draw = async (time: number) => {
     buffer += inputBufferStr.slice(inputBufferStr.length - maxInputChars, inputBufferStr.length)
   } else {
     buffer += inputBufferStr;
-    buffer += " ".repeat(middleWidth - inputBufferStr.length - ps1.length);
+    buffer += "\u00A0".repeat(columns - inputBufferStr.length - ps1.length);
   }
-  buffer += "║";
-  buffer += "\n";
 
-  // Last row
-  buffer += "╚";
-  buffer += "═".repeat(middleWidth);
-  buffer += "╝";
-  buffer += "\n";
-  
-  canvas.innerText = buffer;
+  canvas.appendChild(createLineElement(buffer));
 
   requestAnimationFrame(draw)
 }

@@ -1,14 +1,12 @@
 body {
   margin: 0;
-  overflow: hidden;
 }
 
-pre, code {
+p {
   margin: 0;
   overflow: hidden;
 }
 
 #canvas {
-  font-family: monospace;
   white-space: pre;
 }
