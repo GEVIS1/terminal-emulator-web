@@ -15,6 +15,7 @@ p {
 
 #canvas {
   white-space: pre;
+  overflow: hidden;
 }
 
 /* Credit modified solarized themes: http://thomasf.github.io/solarized-css/ */
