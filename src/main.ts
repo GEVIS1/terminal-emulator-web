@@ -1,4 +1,3 @@
-import './style.css'
 const canvas = document.querySelector<HTMLDivElement>('#terminal');
 
 if (!canvas) {
