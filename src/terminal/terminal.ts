@@ -95,7 +95,7 @@ class Terminal {
   recalculateLines() {
     this.canvas.innerHTML = "";
     let l: HTMLParagraphElement;
-    for (let row = 0; row < this.rows - 1; ++row) {
+    for (let row = this.rows - 2; row >= 0; --row) {
       l = this.createLineElement(`${row}`, false);
       l.id = `line-${row}`
       this.canvas.appendChild(l);
@@ -110,12 +110,12 @@ class Terminal {
 
   private writeBufferToLineElements() {
     for (let row = 0; row < this.rows - 1; ++row) {
-      console.log(row, this.windowBuffer[row] ? this.windowBuffer[row] : "\u00A0".repeat(this.columns));
-
       const line = document.getElementById(`line-${row}`);
 
+      const bufferIndex = this.windowBuffer.length - row;
+
       if (line) {
-        let buffer = this.windowBuffer[row] ? this.windowBuffer[row] : "\u00A0".repeat(this.columns);
+        let buffer = this.windowBuffer[bufferIndex] ? this.windowBuffer[bufferIndex] : "\u00A0".repeat(this.columns);
         buffer = this.generateAnchorTags(buffer);
         line.innerHTML = buffer;
       }
