@@ -248,7 +248,6 @@ class Terminal {
         this.windowBuffer.push(`Available commands: ${ALL_COMMANDS.join(" ")}`);
         break;
       case "hostname":
-        // TODO: Handle spaces/erronous input
         let newHostname = commandArray.shift();
 
         if (newHostname === undefined) {
