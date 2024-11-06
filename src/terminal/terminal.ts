@@ -259,8 +259,14 @@ class Terminal {
         this.windowBuffer.push(this.user);
         break;
       case "motd":
-        this.windowBuffer.push(motd);
+        this.printMotd()
         break;
+    }
+  }
+  private printMotd() {
+    const motd = generateMotd(version, release, formatDateString(new Date())).split("\n")
+    for (const line of motd) {
+      this.windowBuffer.push(line);
     }
   }
 
