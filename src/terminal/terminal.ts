@@ -46,11 +46,11 @@ class Terminal {
   private pwd = `~/`;
   private generatePs1 = () => `${this.user}@${this.host} ${this.pwd} $ `;
   private ps1 = this.generatePs1();
-  private cursorTime = 1000;
-  private lastCursorTime = 0;
-  private drawCursor = true;
+  //private cursorTime = 1000;
+  //private lastCursorTime = 0;
+  //private drawCursor = true;
   private windowBuffer: Array<string> = [];
-  private windowBufferInvalid = true;
+  //private windowBufferInvalid = true;
   private inputBuffer: Array<string> = [];
 
   constructor(canvas: HTMLDivElement) {
