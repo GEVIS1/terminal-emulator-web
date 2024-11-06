@@ -311,56 +311,6 @@ class Terminal {
     return line;
   }
 
-  // // TODO: Only update elements when something changed
-  // draw = async (time: number) => {
-  //   // const cursorToggle = time - this.lastCursorTime > this.cursorTime;
-  //   // if (cursorToggle) {
-  //   //   this.lastCursorTime = time;
-  //   //   this.drawCursor = !this.drawCursor;
-  //   // }
-
-    
-  //   // if (this.windowBufferInvalid) {
-  //   //   console.log("redrawing buffer")
-  //   //   this.redrawBuffer();
-  //   // }
-
-  //   // const inputLine = document.getElementById("inputLine");
-  //   // if (!inputLine) {
-  //   //   const i = this.createLineElement(``, false);
-  //   //   i.id = "inputLine";
-  //   //   this.canvas.appendChild(i);
-  //   // } else {      
-  //   //   // Input line
-  //   //   // TODO: make input line a text input so it works on mobile
-  //   //   let buffer = this.ps1 + this.inputBuffer.join("");
-  //   //   let maxInputChars = this.columns - this.ps1.length;
-
-  //   //   let inputBufferStr = buffer;
-
-  //   //   if (this.drawCursor) {
-  //   //     inputBufferStr += "█";
-  //   //   } else {
-  //   //     inputBufferStr += " ";
-  //   //   }
-
-  //   //   // TODO: ~fix overflow~ write test for overflow
-  //   //   if (inputBufferStr.length > maxInputChars) {
-  //   //     buffer += inputBufferStr.slice(
-  //   //       inputBufferStr.length - maxInputChars,
-  //   //       inputBufferStr.length
-  //   //     );
-  //   //   } else {
-  //   //     buffer += inputBufferStr;
-  //   //     buffer += "\u00A0".repeat(
-  //   //       this.columns - inputBufferStr.length - this.ps1.length
-  //   //     );
-  //   //   }
-  //   //   inputLine.innerText = buffer;
-  //   // }
-  //   requestAnimationFrame(this.draw);
-  // };
-
   private rowToBufferIndex(row: number): number {
     return -(this.rows - 1) + this.windowBuffer.length + row
   }
