@@ -13,7 +13,7 @@ function isCommand(command: string | undefined): command is Command {
 }
 
 const release = import.meta.env.PROD ? 'RELEASE' : 'DEVELOPMENT'
-const version = import.meta.env.VITE_APP_VERSION
+const version = "0.0.1" // TODO: Make this update dynamically with the app version
 const dateObj = new Date();
 const formatDateString = (date: Date) => {
   const strArr = date.toUTCString().replace('GMT', 'UTC').replace(',', '').split(' ');
@@ -38,13 +38,6 @@ CV: https://cv.geving.dev
 
 This terminal emulator is functional and a list of commands
 can be found by inputting \`help'.
-
-To view a plaintext webpage click [here](https://example.com).
-
-Show the version of FreeBSD installed: freebsd-version ; uname -a
-Please include that output and any error messages when posting questions.
-Introduction to manual pages: man man
-FreeBSD directory layout: man hier
 
 \`cat /etc/motd' or \`motd' to see this this login announcement again.
 `
