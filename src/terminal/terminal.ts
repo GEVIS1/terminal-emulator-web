@@ -307,37 +307,6 @@ class Terminal {
     line.innerHTML = buffer;
     return line;
   }
-
-  private rowToBufferIndex(row: number): number {
-    return -(this.rows - 1) + this.windowBuffer.length + row
-  }
-
-  private redrawBuffer() {
-    let buffer = "";
-
-    for (let row = 0; row < this.rows - 1; row++) {
-      let bufferIndex = this.rowToBufferIndex(row);
-      buffer = "";
-
-      if (this.windowBuffer[bufferIndex] === undefined) {
-        buffer += "";
-        buffer += "\u00A0".repeat(this.columns);
-        //console.log(`Wrote ${this.columns} spaces to buffer`);
-      } else {
-        buffer += this.windowBuffer[bufferIndex];
-        // TODO: Properly handle negative numbers. Wrap text perhaps? Push it to the buffer.. etc.
-        let extraSpaces = this.columns - this.windowBuffer[bufferIndex].length;
-        if (extraSpaces > 0) {
-          buffer += "\u00A0".repeat(extraSpaces);
-          //console.log(`Wrote ${extraSpaces} spaces to buffer`);
-        }
-      }
-
-      this.canvas.appendChild(this.createLineElement(buffer));
-    }
-    this.windowBufferInvalid = false;
-    return buffer;
-  }
 }
 
 export default Terminal;
