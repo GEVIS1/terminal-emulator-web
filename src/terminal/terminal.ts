@@ -14,23 +14,18 @@ function isCommand(command: string | undefined): command is Command {
 
 const release = import.meta.env.PROD ? 'RELEASE' : 'DEVELOPMENT'
 const version = "0.0.1" // TODO: Make this update dynamically with the app version
-const dateObj = new Date();
 const formatDateString = (date: Date) => {
   const strArr = date.toUTCString().replace('GMT', 'UTC').replace(',', '').split(' ');
   [strArr[2], strArr[1], strArr[3], strArr[4], strArr[5]] = [strArr[1], strArr[2], strArr[4], strArr[5], strArr[3]]
-  "2024 01:08:41 UTC"
-  "06:54:13 UTC 2015"
-
   return strArr.join(' ');
 }
-const dateString = formatDateString(dateObj);
-const motd =
+const generateMotd = (version: string, release: string, dateString: string) =>
 `
 WebTerminal ${version}-${release} (GENERIC) #0: ${dateString}
 
 Welcome to Steffen Geving's website!
 
-My Email: mailto:gevis1@student.op.ac.nz
+My Email: [gevis1@student.op.ac.nz](mailto:gevis1@student.op.ac.nz)
 LinkedIn: https://www.linkedin.com/in/steffengeving/
 GitHub: https://www.github.com/gevis1
 CV: https://cv.geving.dev
@@ -38,7 +33,7 @@ CV: https://cv.geving.dev
 This terminal emulator is functional and a list of commands
 can be found by inputting \`help'.
 
-\`cat /etc/motd' or \`motd' to see this this login announcement again.
+Enter \`motd' to see this this login announcement again.
 `
 
 class Terminal {
@@ -54,7 +49,7 @@ class Terminal {
   private cursorTime = 1000;
   private lastCursorTime = 0;
   private drawCursor = true;
-  private windowBuffer: Array<string> = motd.split("\n");
+  private windowBuffer: Array<string> = [];
   private windowBufferInvalid = true;
   private inputBuffer: Array<string> = [];
 
@@ -204,6 +199,8 @@ class Terminal {
 
   start() {
     this.recalculateLines();
+    this.printMotd();
+    this.writeBufferToLineElements();
     //requestAnimationFrame(this.draw);
   }
   // TODO: abstract this into this.windowbuffer class perhaps
