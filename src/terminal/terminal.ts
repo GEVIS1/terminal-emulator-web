@@ -1,5 +1,5 @@
 // Credit for string array to type union https://stackoverflow.com/a/45486495
-const ALL_COMMANDS = ["clear", "help", "whoami", "hostname"] as const;
+const ALL_COMMANDS = ["clear", "help", "whoami", "hostname", "motd"] as const;
 type CommandTuple = typeof ALL_COMMANDS;
 type Command = CommandTuple[number];
 
@@ -262,6 +262,9 @@ class Terminal {
         break;
       case "whoami":
         this.windowBuffer.push(this.user);
+        break;
+      case "motd":
+        this.windowBuffer.push(motd);
         break;
     }
   }
