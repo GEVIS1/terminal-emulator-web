@@ -24,7 +24,6 @@ const formatDateString = (date: Date) => {
   return strArr.join(' ');
 }
 const dateString = formatDateString(dateObj);
-console.log(dateString);
 const motd =
 `
 WebTerminal ${version}-${release} (GENERIC) #0: ${dateString}
