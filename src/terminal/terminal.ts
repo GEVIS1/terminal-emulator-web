@@ -13,7 +13,7 @@ function isCommand(command: string | undefined): command is Command {
 }
 
 const release = import.meta.env.PROD ? 'RELEASE' : 'DEVELOPMENT'
-const version = "0.0.1" // TODO: Make this update dynamically with the app version
+const version = "0.0.2" // TODO: Make this update dynamically with the app version
 const formatDateString = (date: Date) => {
   const strArr = date.toUTCString().replace('GMT', 'UTC').replace(',', '').split(' ');
   [strArr[2], strArr[1], strArr[3], strArr[4], strArr[5]] = [strArr[1], strArr[2], strArr[4], strArr[5], strArr[3]]
@@ -24,6 +24,7 @@ const generateMotd = (version: string, release: string, dateString: string) =>
 WebTerminal ${version}-${release} (GENERIC) #0: ${dateString}
 
 Welcome to Steffen Geving's space on the web!
+I am a software developer currently looking to be hired.
 
 My Email: [gevis1@student.op.ac.nz](mailto:gevis1@student.op.ac.nz)
 LinkedIn: https://www.linkedin.com/in/steffengeving/

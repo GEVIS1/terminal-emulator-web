@@ -1,10 +1,13 @@
 # terminal-emulator-web
 A toy terminal emulator written in Typescript using Vite and Bun
 
-An experiment in using the \<pre\> html tag to write a website entirely in monospaced characters with basic terminal commands.
+An experiment in using HTML elements as a dynamic "canvas", rather than the HTML Canvas tag.
 
-Currently only supports commands like hostname, whoami, help and clear.
-Any input you give it is echoed above in the screen buffer.
+Currently supported commands are hostname, whoami, help and clear.
+Any input you give it and execute is echoed above in the screen buffer.
+
+Client side only. Stores no data from sessions, but adding text and/or file editing to be stored in session storage is on the roadmap.
 
 # Deployment
-[Here](https://terminal-emulator-web.fly.dev/)
+[Here](https://terminal-emulator-web.fly.dev/) or [Here](https://www.geving.dev)
+
