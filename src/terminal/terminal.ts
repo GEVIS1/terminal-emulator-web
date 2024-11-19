@@ -23,7 +23,7 @@ const generateMotd = (version: string, release: string, dateString: string) =>
 `
 WebTerminal ${version}-${release} (GENERIC) #0: ${dateString}
 
-Welcome to Steffen Geving's website!
+Welcome to Steffen Geving's space on the web!
 
 My Email: [gevis1@student.op.ac.nz](mailto:gevis1@student.op.ac.nz)
 LinkedIn: https://www.linkedin.com/in/steffengeving/
@@ -32,6 +32,8 @@ CV: https://cv.geving.dev
 
 This terminal emulator is functional and a list of commands
 can be found by inputting \`help'.
+
+The repository for this project can be found [here](https://github.com/GEVIS1/terminal-emulator-web)!
 
 Enter \`motd' to see this this login announcement again.
 `
@@ -108,7 +110,8 @@ class Terminal {
 
   recalculateLines() {
     this.canvas.innerHTML = "";
-    let lineElement: HTMLParagraphElement;
+    let lineElement: HTMLParagraphElement = document.createElement("p");
+    let fontSize = 0;
     for (let row = this.rows - 2; row >= 0; --row) {
       lineElement = this.createLineElement(`${row}`, false);
       lineElement.id = `line-${row}`
@@ -118,7 +121,12 @@ class Terminal {
     }
 
     this.writeBufferToLineElements();
+
     this.inputLine = this.createInputElement();
+    let style = window.getComputedStyle(lineElement, null).getPropertyValue('font-size');
+    fontSize = parseFloat(style);
+    this.inputLine.style.fontSize = `${fontSize}px`;
+
     this.canvas.appendChild(this.inputLine);
   }
 
