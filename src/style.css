@@ -14,9 +14,23 @@ p {
   font-family: 'Iosefka', monospace; 
 }
 
+input {
+  margin: 0;
+  font-family: 'Iosefka', monospace; 
+  background-color: #002b36;
+  border: none;
+  outline: none;
+  color: #839496;
+}
+
 #canvas {
   white-space: pre;
   overflow: hidden;
+}
+
+#terminal {
+  position: absolute;
+  bottom: 0;
 }
 
 /* Credit modified solarized themes: http://thomasf.github.io/solarized-css/ */

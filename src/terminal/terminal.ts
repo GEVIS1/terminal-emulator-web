@@ -52,6 +52,16 @@ class Terminal {
   private windowBuffer: Array<string> = [];
   //private windowBufferInvalid = true;
   private inputBuffer: Array<string> = [];
+  private inputLine: HTMLInputElement;
+
+  private pointerDownEventFunction: ((ev: PointerEvent) => void) | undefined = undefined;
+  private oldPointerDownEventFunction: ((ev: PointerEvent) => void) | undefined = undefined;
+
+  private resizeEventFunction: (() => void) | undefined = undefined;
+  private oldResizeEventFunction: (() => void) | undefined = undefined;
+
+  private keyDownEventFunction: ((ev: KeyboardEvent) => Promise<void>) | undefined = undefined;
+  private oldKeyDownEventFunction: ((ev: KeyboardEvent) => Promise<void>) | undefined = undefined;
 
   constructor(canvas: HTMLDivElement) {
     if (!canvas) {
@@ -66,10 +76,14 @@ class Terminal {
     this.columns = Math.floor(window.innerWidth / this.textSizeRect.width);
     this.rows = Math.floor(window.innerHeight / this.textSizeRect.height);
 
+    this.inputLine = this.createInputElement();
+
+    this.recalculateLines();
+
     this.setupEventListeners();
   }
 
-  private calculateTextSize(): void {
+  calculateTextSize(): void {
     const textSize = document.createElement<"p">("p");
     const bodyElement = document.querySelector("body");
     
@@ -94,18 +108,18 @@ class Terminal {
 
   recalculateLines() {
     this.canvas.innerHTML = "";
-    let l: HTMLParagraphElement;
+    let lineElement: HTMLParagraphElement;
     for (let row = this.rows - 2; row >= 0; --row) {
-      l = this.createLineElement(`${row}`, false);
-      l.id = `line-${row}`
-      this.canvas.appendChild(l);
+      lineElement = this.createLineElement(`${row}`, false);
+      lineElement.id = `line-${row}`
+      lineElement.style.maxHeight = `${this.textSizeRect.height}px`;
+      lineElement.style.height = `${this.textSizeRect.height}px`;
+      this.canvas.appendChild(lineElement);
     }
 
     this.writeBufferToLineElements();
-
-    l = this.createLineElement(`${this.ps1} ${this.inputBuffer.join("")}`, false);
-    l.id = "input-line"
-    this.canvas.appendChild(l);
+    this.inputLine = this.createInputElement();
+    this.canvas.appendChild(this.inputLine);
   }
 
   private writeBufferToLineElements() {
@@ -157,51 +171,13 @@ class Terminal {
       return buffer;
   }
 
-  setupEventListeners() {
-    window.addEventListener("resize", async (_event: Event) => {
-      this.calculateTextSize();
-      this.columns = Math.floor(window.innerWidth / this.textSizeRect.width);
-      this.rows = Math.floor(window.innerHeight / this.textSizeRect.height);
-      this.recalculateLines();
-    });
-
-    window.addEventListener("keydown", async (event: KeyboardEvent) => {
-      if (event.key == "Backspace" && this.inputBuffer.length > 0) {
-        this.inputBuffer.pop();
-      } else if (event.key == "Enter") {
-        let inputstr = this.inputBuffer.join("");
-
-        // TODO: ~handle resizing~ write test for resizing
-        let bufferStr = this.ps1 + inputstr;
-        this.windowBufferSafePush(this.windowBuffer, bufferStr);
-        this.execute(inputstr);
-        this.inputBuffer = [];
-        this.writeBufferToLineElements();
-      } else if (event.ctrlKey && event.key == "v") {
-        let pastedText = await navigator.clipboard.readText();
-        this.inputBuffer.push(pastedText);
-      } else if (event.key.length == 1) {
-        // TODO: Robust testing required. Are emojis 1 length??
-        if (event.key == "'") {
-          event.preventDefault();
-        }
-        this.inputBuffer.push(event.key);
-      }
-      const inputElement = document.getElementById("input-line");
-      if (inputElement) {
-        inputElement.innerText = `${this.ps1} ${this.inputBuffer.join("")}`
-      }
-    });
-    this.recalculateLines();
-  }
-
-  // TODO: animate ripple from centre?
-
   start() {
     this.recalculateLines();
     this.printMotd();
     this.writeBufferToLineElements();
     //requestAnimationFrame(this.draw);
+    // TODO: Find out why the input line doesn't show immediately
+    // Too many lines created on initial calculation
   }
   // TODO: abstract this into this.windowbuffer class perhaps
   windowBufferSafePush(windowBuffer: Array<string>, str: string) {
@@ -306,12 +282,87 @@ class Terminal {
           buffer = buffer.replace(url, element.outerHTML);
         }
       }
-
     }
 
     const line = document.createElement<"p">("p");
     line.innerHTML = buffer;
     return line;
+  }
+
+  createInputElement(): HTMLInputElement {
+    const inputElement = document.createElement("input") as HTMLInputElement;
+    inputElement.id = "input-line"
+    inputElement.type = "text";
+    inputElement.style.maxHeight = `${this.textSizeRect.height}px`;
+    inputElement.style.height = `${this.textSizeRect.height}px`;
+    inputElement.style.width = `${window.innerWidth}px`
+    inputElement.value = `${this.ps1} ${this.inputBuffer.join("")}`;
+    return inputElement;
+  }
+
+  setupEventListeners() {
+    if (typeof this.oldPointerDownEventFunction === "function") { this.canvas.removeEventListener("pointerdown", this.oldPointerDownEventFunction) };
+    if (typeof this.oldResizeEventFunction === "function") { window.removeEventListener("resize", this.oldResizeEventFunction) };
+    if (typeof this.oldKeyDownEventFunction === "function") { window.removeEventListener("keydown", this.oldKeyDownEventFunction) };
+
+    this.pointerDownEventFunction = (ev: PointerEvent) => {
+      ev.preventDefault();
+      if (!this.inputLine) {
+        return;
+      }
+      this.inputLine.focus();
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+  
+    this.resizeEventFunction = () => {
+      this.calculateTextSize();
+      this.columns = Math.floor(window.innerWidth / this.textSizeRect.width);
+      this.rows = Math.floor(window.innerHeight / this.textSizeRect.height);
+      this.recalculateLines();
+      // FIXMe: Duplicate events?
+      console.log("Setting up event listeners")
+      this.setupEventListeners();
+    }
+  
+    this.keyDownEventFunction = async (ev: KeyboardEvent) => {
+      ev.preventDefault();
+      if (ev.key == "Backspace" && this.inputBuffer.length > 0) {
+        this.inputBuffer.pop();
+      } else if (ev.key == "Enter") {
+        let inputstr = this.inputBuffer.join("");
+  
+        // TODO: ~handle resizing~ write test for resizing
+        let bufferStr = this.ps1 + inputstr;
+        this.windowBufferSafePush(this.windowBuffer, bufferStr);
+        this.execute(inputstr);
+        this.inputBuffer = [];
+        this.writeBufferToLineElements();
+      } else if (ev.ctrlKey && ev.key == "v") {
+        let pastedText = await navigator.clipboard.readText();
+        this.inputBuffer.push(pastedText);
+      } else if (ev.key.length == 1) {
+        // TODO: Robust testing required. Are emojis 1 length??
+        if (ev.key == "'") {
+          ev.preventDefault();
+        }
+        this.inputBuffer.push(ev.key);
+      }
+      const inputElement = document.getElementById("input-line") as HTMLInputElement;
+      if (inputElement) {
+        inputElement.value = `${this.ps1} ${this.inputBuffer.join("")}`
+      }
+    }
+
+    this.inputLine.addEventListener("keydown", (ev: KeyboardEvent) => ev.preventDefault())
+    this.canvas.addEventListener("pointerdown", this.pointerDownEventFunction)
+    window.addEventListener("resize", this.resizeEventFunction);
+    window.addEventListener("keydown", this.keyDownEventFunction);
+
+    this.oldPointerDownEventFunction = this.pointerDownEventFunction;
+    this.oldResizeEventFunction = this.resizeEventFunction;
+    this.oldKeyDownEventFunction = this.keyDownEventFunction;
+    
+    this.recalculateLines();
   }
 }
 
