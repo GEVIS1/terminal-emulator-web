@@ -33,6 +33,10 @@ input {
 
 /* Credit modified solarized themes: http://thomasf.github.io/solarized-css/ */
 @media (prefers-color-scheme: dark) {
+  input{
+    background: #002b36;
+    color: #839496;
+  }
   mark {
     background: #ff0;
     color: #000;
@@ -78,6 +82,10 @@ input {
 }
 
 @media (prefers-color-scheme: light) {
+  input {
+    background: #eee8d5;
+    color: #657b83;
+  }
   mark {
     background: #ff0;
     color: #000;
