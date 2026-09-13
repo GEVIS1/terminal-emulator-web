@@ -13,7 +13,7 @@ function isCommand(command: string | undefined): command is Command {
 }
 
 const release = import.meta.env.PROD ? 'RELEASE' : 'DEVELOPMENT'
-const version = "0.0.2" // TODO: Make this update dynamically with the app version
+const version = "0.0.3" // TODO: Make this update dynamically with the app version
 const formatDateString = (date: Date) => {
   const strArr = date.toUTCString().replace('GMT', 'UTC').replace(',', '').split(' ');
   [strArr[2], strArr[1], strArr[3], strArr[4], strArr[5]] = [strArr[1], strArr[2], strArr[4], strArr[5], strArr[3]]
