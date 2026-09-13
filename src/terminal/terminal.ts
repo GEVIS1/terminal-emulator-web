@@ -26,10 +26,8 @@ WebTerminal ${version}-${release} (GENERIC) #0: ${dateString}
 Welcome to Steffen Geving's space on the web!
 I am a software developer currently looking to be hired.
 
-My Email: [gevis1@student.op.ac.nz](mailto:gevis1@student.op.ac.nz)
 LinkedIn: https://www.linkedin.com/in/steffengeving/
 GitHub: https://www.github.com/gevis1
-CV: https://cv.geving.dev
 
 This terminal emulator is functional and a list of commands
 can be found by inputting \`help'.
