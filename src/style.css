@@ -17,10 +17,8 @@ p {
 input {
   margin: 0;
   font-family: 'Iosefka', monospace; 
-  background-color: #002b36;
   border: none;
   outline: none;
-  color: #839496;
 }
 
 #canvas {
